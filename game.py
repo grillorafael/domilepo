@@ -12,6 +12,9 @@ class Player:
         biggest = p
     return biggest
 
+  def discardPiece(self, piece):
+    self.pieces.remove(piece)
+
   def receivePiece(self, piece):
     self.pieces.append(piece)
 
@@ -24,7 +27,10 @@ class DomiLepo:
       Player('green')
     ]
 
+    self.currentTurn = self.players[0]
+
     self.heads = []
+    self.usedPieces = []
     self.pieces = [
       [6, 6],
       [6, 5],
@@ -66,7 +72,29 @@ class DomiLepo:
     self.setInitialHeads()
 
   def setInitialHeads(self):
-    print "DomiLepo#setInitialHeads: Not yep implemented"
+    player = self.players[0]
+    biggestPiece = player.getBiggestPiece()
+    for p in self.players:
+      playerBiggestPiece = p.getBiggestPiece()
+      if((playerBiggestPiece[0] + playerBiggestPiece[1]) > (biggestPiece[0] + biggestPiece[1])):
+        player = p
+        biggestPiece = playerBiggestPiece
+
+    player.discardPiece(biggestPiece)
+    self.heads = biggestPiece
+    self.currentTurn = player
+
+    self.usedPieces.append([biggestPiece, player])
+
+  def setNextTurn(self):
+    for idx, p in self.players:
+      if p == self.currentTurn:
+        if (idx - 1) == len(self.players):
+          self.currentTurn = self.players[0]
+          return
+        else:
+          self.currentTurn = p
+          return
 
   def giveCards(self):
     currentPlayer = 0;

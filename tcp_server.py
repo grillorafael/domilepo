@@ -13,9 +13,10 @@ class TcpHandler(SocketServer.BaseRequestHandler):
     self.request.sendall(self.data.upper())
 
 class TcpServer:
-  def __init__(self):
-    HOST, PORT = "127.0.0.1", 3000
+  def __init__(self, game):
+    self.game = game
 
+    HOST, PORT = "127.0.0.1", 3000
     # Create the server, binding to localhost on port 9999
     server = SocketServer.TCPServer((HOST, PORT), TcpHandler)
 

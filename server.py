@@ -22,7 +22,7 @@ def askForTransportMethod():
 def initGame():
   print Colors.blue("Welcome to DomiLepo!")
   game = DomiLepo()
-  server = Server()
+  server = Server(game)
 
 askForTransportMethod()
 initGame()

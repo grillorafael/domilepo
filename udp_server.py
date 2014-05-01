@@ -1,7 +1,8 @@
 from socket import *
 
 class UdpServer:
-  def __init__(self):
+  def __init__(self, game):
+    self.game = game
     print "Not yet implemented"
     # serverPort = 12000
     # serverSocket = socket(AF_INET, SOCK_STREAM)

@@ -13,3 +13,6 @@ class Colors:
   @staticmethod
   def red(str):
     return Colors.BLUE + str + Colors.ENDC
+  @staticmethod
+  def yellow(str):
+    return Colors.BLUE + str + Colors.ENDC

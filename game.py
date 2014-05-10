@@ -25,13 +25,19 @@ class Player:
   def receivePiece(self, piece):
     self.pieces.append(piece)
 
+  def piecesOptions(self):
+    piecesOptions = ""
+    for idx, p in self.pieces:
+      piecesOptions = "p{i}: [{head}, {tail}]\n".format(i=idx, head=p[0], tail=p[1])
+    return piecesOptions
+
 class DomiLepo:
   def __init__(self):
     self.players = [
       Player('blue'),
-      Player('yellow'),
-      Player('red'),
-      Player('green')
+      Player('yellow')
+      # Player('red'),
+      # Player('green')
     ]
 
     self.currentTurn = self.players[0]
@@ -79,7 +85,7 @@ class DomiLepo:
     self.setInitialHeads()
 
   def readyToStart(self):
-    return len(pendingConnectionPlayers()) == 0
+    return len(self.pendingConnectionPlayers()) == 0
 
   def connectPlayer(self, connection):
     if(len(self.pendingConnectionPlayers()) > 0):
@@ -129,7 +135,7 @@ class DomiLepo:
     while(len(self.pieces) > 4):
       self.players[currentPlayer].receivePiece(self.getPiece())
       currentPlayer+=1
-      if currentPlayer == 4:
+      if currentPlayer == len(self.players):
         currentPlayer = 0
 
   def getPiece(self):

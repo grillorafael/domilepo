@@ -4,6 +4,13 @@ class Player:
   def __init__(self, identifier):
     self.identifier = identifier
     self.pieces = []
+    self.connection = None
+
+  def setConnection(self, connection):
+    self.connection = connection
+
+  def hasConnection(self):
+    return not(self.connection == None)
 
   def getBiggestPiece(self):
     biggest = self.pieces[0]
@@ -70,6 +77,27 @@ class DomiLepo:
 
     self.giveCards()
     self.setInitialHeads()
+
+  def readyToStart(self):
+    return len(pendingConnectionPlayers()) == 0
+
+  def connectPlayer(self, connection):
+    if(len(self.pendingConnectionPlayers()) > 0):
+      self.pendingConnectionPlayers()[0].setConnection(connection)
+
+  def pendingConnectionPlayers(self):
+    pendingPlayers = []
+    for p in self.players:
+      if not p.hasConnection():
+        pendingPlayers.append(p)
+    return pendingPlayers
+
+  def connectedPlayers(self):
+    connectedPlayers = []
+    for p in self.players:
+      if(p.hasConnection()):
+        connectedPlayers.append(p)
+    return connectedPlayers
 
   def setInitialHeads(self):
     player = self.players[0]

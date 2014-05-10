@@ -3,42 +3,46 @@ import sys
 import json
 import os
 
-def handleMessage(message, sock):
-  message = json.loads(message)
+class TcpClient:
+  def __init__(self):
+    self.messageTmp = ""
+    self.stackMessage = []
 
-  if(message['type'] == 'message'):
+    HOST, PORT = "127.0.0.1", 3000
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+      sock.connect((HOST, PORT))
+      while 1:
+        self.formMessage(sock.recv(1024), sock)
+    finally:
+      sock.close()
+
+  def handleMessage(self, message, sock):
+    message = json.loads(message)
+    print '------------ NEW INTERACTION ---------'
     print message['message']
-  elif(message['type'] == 'options'):
-    os.system('clear')
-    print message['message']
-    option = raw_input("Please, enter your option\n")
-    sock.send(json.dumps({'type': 'options', 'selected': option}))
+    if(message['type'] == 'options'):
+      option = raw_input(message['question'])
+      sock.send(json.dumps({'type': 'options', 'selected': option}))
+    elif(message['type'] == 'piece'):
+      option = raw_input(message['question'])
+      sock.send(json.dumps({'type': 'piece', 'selected': option}))
+    elif(message['type'] == 'position'):
+      option = raw_input(message['question'])
+      sock.send(json.dumps({'type': 'piece', 'selected': option}))
 
-def formMessage(r, chunks, stackMessage, sock):
-  for c in r:
-    chunks = chunks + c
-    if c == '{':
-      stackMessage.append('{')
-    elif c == '}':
-      stackMessage.pop()
+  def formMessage(self, r, sock):
+    for c in r:
+      self.messageTmp = self.messageTmp + c
+      if c == '{':
+        self.stackMessage.append('{')
+      elif c == '}':
+        self.stackMessage.pop()
 
-    if len(stackMessage) == 0:
-      fullMessage = chunks
-      chunks = ""
-      handleMessage(fullMessage, sock)
+      if len(self.stackMessage) == 0:
+        fullMessage = self.messageTmp
+        self.messageTmp = ""
+        self.handleMessage(fullMessage, sock)
 
-def main():
-  HOST, PORT = "127.0.0.1", 3000
-  chunks = ""
-  stackMessage = []
-
-  sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  try:
-    sock.connect((HOST, PORT))
-    while 1:
-      formMessage(sock.recv(1024), chunks, stackMessage, sock)
-  finally:
-    sock.close()
-
-
-main()
+TcpClient()

@@ -1,3 +1,4 @@
+from sets import Set
 from random import randint
 
 class Player:
@@ -5,6 +6,15 @@ class Player:
     self.identifier = identifier
     self.pieces = []
     self.connection = None
+
+  def getPieceByIdx(self, idx):
+    if len(self.pieces) >= idx and idx > 0:
+      return self.pieces[idx]
+    else:
+      return False
+
+  def __eq__(self, other):
+    return self.identifier == other.identifier
 
   def setConnection(self, connection):
     self.connection = connection
@@ -27,8 +37,10 @@ class Player:
 
   def piecesOptions(self):
     piecesOptions = ""
-    for idx, p in self.pieces:
-      piecesOptions = "p{i}: [{head}, {tail}]\n".format(i=idx, head=p[0], tail=p[1])
+    i = 0
+    for p in self.pieces:
+      piecesOptions = piecesOptions + "p{i}: [{head}, {tail}]\n".format(i=i, head=p[0], tail=p[1])
+      i = i + 1
     return piecesOptions
 
 class DomiLepo:
@@ -84,6 +96,42 @@ class DomiLepo:
     self.giveCards()
     self.setInitialHeads()
 
+  def getPlayerbySocket(self, connection):
+    for p in self.players:
+      if p.connection == connection:
+        return p
+    return None
+
+  def playPiece(self, piece, position):
+    self.currentTurn.discardPiece(piece)
+    if self.heads[position] == piece[0]:
+      self.heads[position] = piece[1]
+    else:
+      self.heads[position] = piece[0]
+    self.setNextTurn()
+
+  def canUsePiece(self, piece):
+    positions = Set([])
+
+    if self.heads[0] == self.heads[1]:
+      if self.heads[0] == piece[0]:
+        positions.add(0)
+      if self.heads[0] == piece[1]:
+        positions.add(0)
+    else:
+      if piece[0] == self.heads[0]:
+        positions.add(0)
+      if piece[0] == self.heads[1]:
+        positions.add(1)
+
+      if piece[1] == self.heads[0]:
+        positions.add(0)
+
+      if piece[1] == self.heads[1]:
+        positions.add(1)
+
+    return positions
+
   def readyToStart(self):
     return len(self.pendingConnectionPlayers()) == 0
 
@@ -121,13 +169,13 @@ class DomiLepo:
     self.usedPieces.append([biggestPiece, player])
 
   def setNextTurn(self):
-    for idx, p in self.players:
+    for idx, p in enumerate(self.players):
       if p == self.currentTurn:
-        if (idx - 1) == len(self.players):
+        if idx == len(self.players) - 1:
           self.currentTurn = self.players[0]
           return
         else:
-          self.currentTurn = p
+          self.currentTurn = self.players[idx + 1]
           return
 
   def giveCards(self):
@@ -143,3 +191,11 @@ class DomiLepo:
     piece = self.pieces[index]
     self.pieces.remove(piece)
     return piece
+
+  def printGamePieces(self):
+    gameUsedPieces = ""
+    i = 0
+    for p in self.pieces:
+      gameUsedPieces = gameUsedPieces + "[{head}, {tail}]\n".format(head=p[0], tail=p[1])
+      i = i + 1
+    return gameUsedPieces

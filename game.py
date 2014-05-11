@@ -8,7 +8,7 @@ class Player:
     self.connection = None
 
   def getPieceByIdx(self, idx):
-    if len(self.pieces) >= idx and idx > 0:
+    if len(self.pieces)-1 >= idx and idx >= 0:
       return self.pieces[idx]
     else:
       return False

@@ -4,13 +4,14 @@ from terminal_colors import *
 from tcp_server import *
 from udp_server import *
 
-Server = TcpServer
+Server = UdpServer
 def askForTransportMethod():
   os.system('clear')
   print Colors.blue('Select your transport method:') + "\n"
   print Colors.green('(1) TCP') + "\n"
   print Colors.green('(2) UDP') + "\n"
   selected = int(raw_input(""))
+  print selected
   if selected == 1:
     Server = TcpServer
   elif selected ==2:

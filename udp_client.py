@@ -31,7 +31,7 @@ class UdpClient:
       sock.sendto(json.dumps({'type': 'piece', 'selected': option}),sv)
     elif(message['type'] == 'position'):
       option = raw_input(message['question'])
-      sock.sendto(json.dumps({'type': 'piece', 'selected': option}), sv)
+      sock.sendto(json.dumps({'type': 'position', 'selected': option}), sv)
 
   def formMessage(self, r, sock, sv):
     for c in r:

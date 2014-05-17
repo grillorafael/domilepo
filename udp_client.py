@@ -21,7 +21,6 @@ class UdpClient:
 
   def handleMessage(self, message, sock, sv):
     message = json.loads(message)
-    print '------------ NEW INTERACTION ---------'
     print message['message']
     if(message['type'] == 'options'):
       option = raw_input(message['question'])

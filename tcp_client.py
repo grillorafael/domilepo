@@ -20,7 +20,6 @@ class TcpClient:
 
   def handleMessage(self, message, sock):
     message = json.loads(message)
-    print '------------ NEW INTERACTION ---------'
     print message['message']
     if(message['type'] == 'options'):
       option = raw_input(message['question'])
@@ -30,7 +29,7 @@ class TcpClient:
       sock.send(json.dumps({'type': 'piece', 'selected': option}))
     elif(message['type'] == 'position'):
       option = raw_input(message['question'])
-      sock.send(json.dumps({'type': 'piece', 'selected': option}))
+      sock.send(json.dumps({'type': 'position', 'selected': option}))
 
   def formMessage(self, r, sock):
     for c in r:

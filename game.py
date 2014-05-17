@@ -1,5 +1,6 @@
 from sets import Set
 from random import randint
+from terminal_colors import *
 
 class Player:
   def __init__(self, identifier):
@@ -63,17 +64,13 @@ class DomiLepo:
       # Player('Red'),
       # Player('Green')
     ]
+
     self.teams = 2
     self.maxScore = 7
 
     self.currentTurn = self.players[0]
     self.gameOver = True
-    #self.heads = []
-    #self.usedPieces = []
-    #self.setPieces()
     self.newGame()
-    #self.giveCards()
-    #self.setInitialHeads()
 
   def setPieces(self):
       #testFunction
@@ -139,7 +136,8 @@ class DomiLepo:
 
   def playPiece(self, piece, position):
     self.currentTurn.discardPiece(piece)
-    self.usedPieces.append([piece, self.currentTurn.identifier])
+    colorsPrintMethod = getattr(Colors, self.currentTurn.identifier.lower())
+    self.usedPieces.append([piece, colorsPrintMethod(self.currentTurn.identifier)])
     print "[{a},{s}]".format(a=piece[0], s = piece[1])
     if len(self.currentTurn.pieces) == 0:
       self.gameOver = True
@@ -279,10 +277,9 @@ class DomiLepo:
           t.players.append(self.players[i])
           t.score += self.players[i].score
     return team
-    
+
 class Score:
     def __init__(self, id):
       self.id = id
       self.players = []
       self.score = 0
-

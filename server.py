@@ -4,7 +4,6 @@ from terminal_colors import *
 from tcp_server import *
 from udp_server import *
 
-Server = UdpServer
 def askForTransportMethod():
   os.system('clear')
   print Colors.blue('Select your transport method:') + "\n"
@@ -13,17 +12,16 @@ def askForTransportMethod():
   selected = int(raw_input(""))
   print selected
   if selected == 1:
-    Server = TcpServer
-  elif selected ==2:
-    Sever = UdpServer
+    return TcpServer
+  elif selected == 2:
+    return UdpServer
   else:
     print "Please enter a valid option..."
-    askForTransportMethod()
+    return askForTransportMethod()
 
-def initGame():
+def initGame(Server):
   print Colors.blue("Welcome to DomiLepo!")
   game = DomiLepo()
   server = Server(game)
 
-askForTransportMethod()
-initGame()
+initGame(askForTransportMethod())

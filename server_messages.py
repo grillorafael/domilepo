@@ -7,7 +7,6 @@ class ServerMessages(object):
 
     def handleData(self, data):
         if data:
-            data = json.loads(data)
             if(data['type'] == 'options'):
                 if(data['selected'] == '1'):
                     self.showCurrentPlayerPieces()

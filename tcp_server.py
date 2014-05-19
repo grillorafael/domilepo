@@ -46,5 +46,6 @@ class TcpServer(ServerMessages):
     def receiveData(self):
         while 1:
             data = self.game.currentTurn.connection.recv(1024)
+            data = json.loads(data)
             if(self.handleData(data)):
                 return;

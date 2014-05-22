@@ -8,6 +8,8 @@ class Player:
     self.pieces = []
     self.connection = None
     self.score = 0
+    self.waitingForAck = True
+    self.lastPackageSent = None
 
   def getPieceByIdx(self, idx):
     if len(self.pieces)-1 >= idx and idx >= 0:
@@ -16,6 +18,8 @@ class Player:
       return False
 
   def __eq__(self, other):
+    if(other == None):
+      return False
     return self.identifier == other.identifier
 
   def setConnection(self, connection):
@@ -131,7 +135,7 @@ class DomiLepo:
   def getPlayerbySocket(self, connection):
     for p in self.players:
       if p.connection == connection:
-          return p
+        return p
     return None
 
   def playPiece(self, piece, position):
@@ -184,8 +188,12 @@ class DomiLepo:
     return len(self.pendingConnectionPlayers()) == 0
 
   def connectPlayer(self, connection):
+    player = None
     if (len(self.pendingConnectionPlayers()) > 0):
-      self.pendingConnectionPlayers()[0].setConnection(connection)
+      player = self.pendingConnectionPlayers()[0]
+      player.setConnection(connection)
+
+    return player
 
   def pendingConnectionPlayers(self):
     pendingPlayers = []

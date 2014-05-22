@@ -2,7 +2,7 @@
 from socket import *
 from terminal_colors import *
 from server_messages import *
-import json
+import json, random
 
 class UdpServer(ServerMessages):
     def __init__(self, game):
@@ -24,15 +24,24 @@ class UdpServer(ServerMessages):
                 self.receiveData()
             else:
                 msg, address = self.s.recvfrom(2048)
-                self.game.connectPlayer(address)
 
-                self.ackFor(address, json.loads(msg))
+                print "Receiving", msg, " from ", address
 
                 player = self.game.getPlayerbySocket(address)
+                if(player == None):
+                    player = self.game.connectPlayer(address)
+                    self.ackFor(address, json.loads(msg))
+                elif(player.lastPackageSent == json.loads(msg)):
+                    print "Discharging package"
+                    self.ackFor(address, json.loads(msg))
+                    # Descartando pacotes atrasados
+                    continue
+
+                player.lastPackageSent = json.loads(msg)
+
                 self.sendMessageToPlayer(player, {'type': 'message', 'message': "You are the {} player".format(player.identifier.upper())})
                 self.broadcastMessage({'type': 'message', 'message': "{} player connected".format(player.identifier.upper())})
                 self.broadcastMessage({'type': 'message', 'message': "Waiting for {} players to connect...".format(len(self.game.pendingConnectionPlayers()))})
-
 
     def sendMessageToCurrentPlayer(self, message):
         self.s.sendto(json.dumps(message), self.game.currentTurn.connection)
@@ -41,9 +50,16 @@ class UdpServer(ServerMessages):
         self.s.sendto(json.dumps(message), player.connection)
 
     def ackFor(self, sender, data):
-        print "Sending ack for ", sender, data
-        messageToSend = { 'type': 'ack', 'message': "", 'packageId': data['identifier'] }
-        self.s.sendto(json.dumps(messageToSend), sender)
+        if(random.random() > 0.5):
+            print "Sending ack for ", sender, data
+            player = self.game.getPlayerbySocket(sender)
+
+            if(player.waitingForAck == data['identifier']):
+                messageToSend = { 'type': 'ack', 'message': "", 'packageId': data['identifier'] }
+                self.s.sendto(json.dumps(messageToSend), sender)
+                player.waitingForAck = not player.waitingForAck
+        else:
+            print "Not sending ACK"
 
     def broadcastMessage(self, message):
         print message
@@ -53,8 +69,18 @@ class UdpServer(ServerMessages):
     def receiveData(self):
         while 1:
             data, sender = self.s.recvfrom(1024)
+            print "Receiving", data, " from ", sender
             data = json.loads(data)
 
             self.ackFor(sender, data)
+
+            player = self.game.getPlayerbySocket(sender)
+            if(player.lastPackageSent == data):
+                print "Last received message was ", player.lastPackageSent
+                print "Discharging package"
+                # Descartando pacotes atrasados de outros jogadores e pacotes duplicados
+                return
+
+            player.lastPackageSent = data
             if(self.handleData(data)):
-                return;
+                return

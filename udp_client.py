@@ -1,5 +1,5 @@
 from socket import *
-import json
+import time, threading, json, thread
 
 class UdpClient:
 
@@ -7,10 +7,13 @@ class UdpClient:
         self.messageTmp = ""
         self.stackMessage = []
 
+        self.lastTimeoutRetransmition = None
+
         self.packagesQueue = []
-        self.timeout = 100 #ms
+        self.timeout = 5000 #ms
         self.packageWaitingForAck = None
         self.lastPackageId = False # False // True instead of 0//1
+        self.happeningTimeout = None
 
         port = 12000
         HOST, PORT = "127.0.0.1", int(port)
@@ -34,34 +37,61 @@ class UdpClient:
     def setNextPackage(self):
         if(len(self.packagesQueue) > 0 and self.packageWaitingForAck == None):
             self.packageWaitingForAck = self.packagesQueue[0]
-            self.sendPendingPackage()
 
-    def sendPendingPackage(self):
+            self.happeningTimeout = threading.Timer(self.timeout / 1000, self.sendPendingPackage)
+            self.happeningTimeout.start()
+
+            self.sendPendingPackage(False)
+
+    def sendPendingPackage(self, retransmition = True):
+        if(retransmition):
+            self.happeningTimeout = threading.Timer(self.timeout / 1000, self.sendPendingPackage)
+            self.happeningTimeout.start()
+
+            print "Retransmiting package"
+        print "sendPendingPackage"
         if(not (self.packageWaitingForAck == None)):
             self.sock.sendto(json.dumps(self.packageWaitingForAck), self.sv)
 
     def sendMessage(self, message):
         self.queueMessage(message)
 
+    def typeMessage(self, message):
+        option = raw_input(message['question'])
+        self.sendMessage({'type': 'options', 'selected': option})
+
+    def optionsMessage(self, message):
+        option = raw_input(message['question'])
+        self.sendMessage({'type': 'piece', 'selected': option})
+
+    def positionMessage(self, message):
+        option = raw_input(message['question'])
+        self.sendMessage({'type': 'position', 'selected': option})
+
+    def ackMessage(self, message):
+        print "Receiving ack for ", message
+        self.happeningTimeout.cancel()
+        self.packageWaitingForAck = None
+        self.packagesQueue.pop(0) # Removing que first element
+        self.setNextPackage()
+
     def handleMessage(self, message):
         message = json.loads(message)
+        print message
         print message['message']
+        func = None
         if(message['type'] == 'options'):
-            option = raw_input(message['question'])
-            self.sendMessage({'type': 'options', 'selected': option})
+            thread.start_new_thread(self.typeMessage, (message, ))
         elif(message['type'] == 'piece'):
-            option = raw_input(message['question'])
-            self.sendMessage({'type': 'piece', 'selected': option})
+            thread.start_new_thread(self.optionsMessage, (message, ))
         elif(message['type'] == 'position'):
-            option = raw_input(message['question'])
-            self.sendMessage({'type': 'position', 'selected': option})
+            thread.start_new_thread(self.positionMessage, (message, ))
         elif(message['type'] == 'ack' and message['packageId'] == self.packageWaitingForAck['identifier']):
-            self.packageWaitingForAck = None
-            self.packagesQueue.pop(0) # Removing que first element
-            self.setNextPackage()
-        else:
+            thread.start_new_thread(self.ackMessage, (message, ))
+        # else:
             # Retransmit last package
-            self.sendPendingPackage()
+            # Talvez tenha que retransmitir
+            # self.sendPendingPackage()
 
     def formMessage(self, r):
         for c in r:

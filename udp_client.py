@@ -1,5 +1,5 @@
 from socket import *
-import time, threading, json, thread
+import time, threading, json, thread, json, random
 
 class UdpClient:
 
@@ -10,16 +10,17 @@ class UdpClient:
         self.lastTimeoutRetransmition = None
 
         self.packagesQueue = []
-        self.timeout = 5000 #ms
+        self.timeout = 50000 #ms
         self.packageWaitingForAck = None
         self.lastPackageId = False # False // True instead of 0//1
+        self.state = True # False // True instead of 0//1
         self.happeningTimeout = None
 
         port = 12000
         HOST, PORT = "127.0.0.1", int(port)
         self.sv = (HOST, PORT)
         self.sock = socket(AF_INET, SOCK_DGRAM)
-        self.sendMessage({})
+        self.sendMessage({'type': 'Join'})
         try:
             while 1:
                 msg = self.sock.recv(1024)
@@ -48,12 +49,13 @@ class UdpClient:
             self.happeningTimeout = threading.Timer(self.timeout / 1000, self.sendPendingPackage)
             self.happeningTimeout.start()
 
-            print "Retransmiting package"
-        print "sendPendingPackage"
+            #print "Retransmiting package"
+        #print "sendPendingPackage"
         if(not (self.packageWaitingForAck == None)):
             self.sock.sendto(json.dumps(self.packageWaitingForAck), self.sv)
 
     def sendMessage(self, message):
+        print "Sending", message
         self.queueMessage(message)
 
     def typeMessage(self, message):
@@ -69,29 +71,32 @@ class UdpClient:
         self.sendMessage({'type': 'position', 'selected': option})
 
     def ackMessage(self, message):
-        print "Receiving ack for ", message
+        #print "Receiving ack for ", message
         self.happeningTimeout.cancel()
         self.packageWaitingForAck = None
         self.packagesQueue.pop(0) # Removing que first element
         self.setNextPackage()
 
     def handleMessage(self, message):
-        message = json.loads(message)
         print message
+        message = json.loads(message)
+        #print message
         print message['message']
         func = None
-        if(message['type'] == 'options'):
-            thread.start_new_thread(self.typeMessage, (message, ))
-        elif(message['type'] == 'piece'):
-            thread.start_new_thread(self.optionsMessage, (message, ))
-        elif(message['type'] == 'position'):
-            thread.start_new_thread(self.positionMessage, (message, ))
-        elif(message['type'] == 'ack' and message['packageId'] == self.packageWaitingForAck['identifier']):
+        if(message['type'] == 'ack' and message['packageId'] == self.packageWaitingForAck['identifier']):
             thread.start_new_thread(self.ackMessage, (message, ))
+        elif(self.ackFor(message)):
+            if(message['type'] == 'options'):
+                thread.start_new_thread(self.typeMessage, (message, ))
+            elif(message['type'] == 'piece'):
+                thread.start_new_thread(self.optionsMessage, (message, ))
+            elif(message['type'] == 'position'):
+                thread.start_new_thread(self.positionMessage, (message, ))
         # else:
             # Retransmit last package
             # Talvez tenha que retransmitir
             # self.sendPendingPackage()
+
 
     def formMessage(self, r):
         for c in r:
@@ -104,5 +109,24 @@ class UdpClient:
                 fullMessage = self.messageTmp
                 self.messageTmp = ""
                 self.handleMessage(fullMessage)
+                print "handl'd"
+
+
+    def ackFor(self, data):
+        if(random.random() > 0.0):
+            print "Sending ack for ", self.sv, data
+
+            if(self.state == data['identifier']):
+                print   "Acking"
+                messageToSend = { 'type': 'ack', 'message': "", 'packageId': data['identifier'] }
+                self.sock.sendto(json.dumps(messageToSend), self.sv)
+                self.state = not self.state
+                return True
+            else:
+                print "Notacking"
+            return False
+        else:
+            print "Not sending ACK"
+
 
 UdpClient()

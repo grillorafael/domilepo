@@ -10,7 +10,7 @@ class UdpClient:
         self.lastTimeoutRetransmition = None
 
         self.packagesQueue = []
-        self.timeout = 50000 #ms
+        self.timeout = 2000 #ms
         self.packageWaitingForAck = None
         self.lastPackageId = False # False // True instead of 0//1
         self.state = True # False // True instead of 0//1
@@ -20,7 +20,7 @@ class UdpClient:
         HOST, PORT = "127.0.0.1", int(port)
         self.sv = (HOST, PORT)
         self.sock = socket(AF_INET, SOCK_DGRAM)
-        self.sendMessage({'type': 'Join'})
+        self.sendMessage({'type': 'join'})
         try:
             while 1:
                 msg = self.sock.recv(1024)
@@ -44,6 +44,7 @@ class UdpClient:
 
             self.sendPendingPackage(False)
 
+
     def sendPendingPackage(self, retransmition = True):
         if(retransmition):
             self.happeningTimeout = threading.Timer(self.timeout / 1000, self.sendPendingPackage)
@@ -55,20 +56,29 @@ class UdpClient:
             self.sock.sendto(json.dumps(self.packageWaitingForAck), self.sv)
 
     def sendMessage(self, message):
-        print "Sending", message
+        #print "Sending", message
         self.queueMessage(message)
 
     def typeMessage(self, message):
         option = raw_input(message['question'])
-        self.sendMessage({'type': 'options', 'selected': option})
+        if(option == ''):
+            self.typeMessage(message);
+        else:
+            self.sendMessage({'type': 'options', 'selected': option})
 
     def optionsMessage(self, message):
         option = raw_input(message['question'])
-        self.sendMessage({'type': 'piece', 'selected': option})
+        if(option == ''):
+            self.optionsMessage(message);
+        else:
+            self.sendMessage({'type': 'piece', 'selected': option})
 
     def positionMessage(self, message):
         option = raw_input(message['question'])
-        self.sendMessage({'type': 'position', 'selected': option})
+        if(option == ''):
+            self.positionMessage(message);
+        else:
+            self.sendMessage({'type': 'position', 'selected': option})
 
     def ackMessage(self, message):
         #print "Receiving ack for ", message
@@ -78,14 +88,14 @@ class UdpClient:
         self.setNextPackage()
 
     def handleMessage(self, message):
-        print message
+        #print message
         message = json.loads(message)
         #print message
-        print message['message']
         func = None
         if(message['type'] == 'ack' and message['packageId'] == self.packageWaitingForAck['identifier']):
             thread.start_new_thread(self.ackMessage, (message, ))
         elif(self.ackFor(message)):
+            print message['message']
             if(message['type'] == 'options'):
                 thread.start_new_thread(self.typeMessage, (message, ))
             elif(message['type'] == 'piece'):
@@ -109,24 +119,27 @@ class UdpClient:
                 fullMessage = self.messageTmp
                 self.messageTmp = ""
                 self.handleMessage(fullMessage)
-                print "handl'd"
 
 
     def ackFor(self, data):
-        if(random.random() > 0.0):
-            print "Sending ack for ", self.sv, data
-
+        if(random.random() > 0.2):
+            #print "Sending ack for ", self.sv, data
             if(self.state == data['identifier']):
-                print   "Acking"
+                #print   "Acking"
                 messageToSend = { 'type': 'ack', 'message': "", 'packageId': data['identifier'] }
                 self.sock.sendto(json.dumps(messageToSend), self.sv)
                 self.state = not self.state
                 return True
             else:
-                print "Notacking"
-            return False
+                #print   "Reacking"
+                messageToSend = { 'type': 'ack', 'message': "", 'packageId': data['identifier'] }
+                self.sock.sendto(json.dumps(messageToSend), self.sv)
+                return False
         else:
             print "Not sending ACK"
-
-
+            if(self.state == data['identifier']):
+                self.state = not self.state
+                return True
+            else:
+                return False
 UdpClient()

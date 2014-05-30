@@ -2,7 +2,7 @@
 from socket import *
 from terminal_colors import *
 from server_messages import *
-import json, random, threading
+import json, random, threading, thread
 
 class UdpServer(ServerMessages):
     def __init__(self, game):
@@ -16,13 +16,14 @@ class UdpServer(ServerMessages):
 
 
         self.packagesQueue = []
-        self.timeout = 50000 #ms
+        self.timeout = 2000 #ms
         self.packageWaitingForAck = None
-        self.lastPackageId = False # False // True instead of 0//1
+        #self.lastPackageId = False # False // True instead of 0//1
         self.happeningTimeout = None
 
 
         while 1:
+            self.game.printPlayerTable()
             if(self.game.readyToStart()):
                 colorsPrintMethod = getattr(Colors, self.game.currentTurn.identifier.lower())
 
@@ -41,18 +42,23 @@ class UdpServer(ServerMessages):
                 player = self.game.getPlayerbySocket(address)
                 if(player == None):
                     player = self.game.connectPlayer(address)
-                    self.ackFor(address, json.loads(msg))
                 elif(player.lastPackageSent == json.loads(msg)):
-                    #print "Discharging package"
+                    print "Discharging package"
                     self.ackFor(address, json.loads(msg))
                     # Descartando pacotes atrasados
                     continue
                 jsonMsg = json.loads(msg)
                 if(jsonMsg['type']!='ack'):
-                    player.lastPackageSent = jsonMsg
-                    self.sendMessageToPlayer(player, {'type': 'message', 'message': "You are the {} player".format(player.identifier.upper())})
-                    self.broadcastMessage({'type': 'message', 'message': "{} player connected".format(player.identifier.upper())})
-                    self.broadcastMessage({'type': 'message', 'message': "Waiting for {} players to connect...".format(len(self.game.pendingConnectionPlayers()))})
+                    if(jsonMsg['type']!='join'):
+                        self.ackFor(address, jsonMsg)
+                    else:
+                        player.lastPackageSent = jsonMsg
+                        print jsonMsg
+                        self.sendMessageToPlayer(player, {'type': 'message', 'message': "You are the {} player".format(player.identifier.upper())})
+                        self.broadcastMessage({'type': 'message', 'message': "{} player connected".format(player.identifier.upper())})
+                        self.broadcastMessage({'type': 'message', 'message': "Waiting for {} players to connect...".format(len(self.game.pendingConnectionPlayers()))})
+                else:
+                    self.ackMessage(address, jsonMsg)
 
     def sendMessageToCurrentPlayer(self, message):
         #self.s.sendto(json.dumps(message), self.game.currentTurn.connection)
@@ -86,7 +92,7 @@ class UdpServer(ServerMessages):
     def broadcastMessage(self, message):
         #print message
         for p in self.game.connectedPlayers():
-            self.queueMessage(p.connection, message)
+            self.queueMessage(p.connection, message.copy())
             #self.s.sendto(json.dumps(message), p.connection)
 
     def receiveData(self):
@@ -94,9 +100,9 @@ class UdpServer(ServerMessages):
             data, sender = self.s.recvfrom(1024)
             #print "Receiving", data, " from ", sender
             data = json.loads(data)
-            print "DATA: ",data
 
             if(not self.ackFor(sender, data)):
+                self.ackMessage(sender, data)
                 return False
 
             player = self.game.getPlayerbySocket(sender)
@@ -108,13 +114,14 @@ class UdpServer(ServerMessages):
 
             player.lastPackageSent = data
             if(self.handleData(data)):
-                print "TRUUUE"
                 return True
 
 
     def queueMessage(self, connection, message):
-        message['identifier'] = not self.lastPackageId
-        self.lastPackageId = not self.lastPackageId
+        player = self.game.getPlayerbySocket(connection)
+        message['identifier'] = player.state
+        print "Empilhando:", message,"\nPara:", connection, "\n"
+        player.state = not player.state
         self.packagesQueue.append((message, connection))
         self.setNextPackage()
 
@@ -123,12 +130,11 @@ class UdpServer(ServerMessages):
         print len(self.packagesQueue)
         if(len(self.packagesQueue) > 0 and self.packageWaitingForAck == None):
             self.packageWaitingForAck = self.packagesQueue[0]
-            print "Esperando", self.packageWaitingForAck;
+            print "Esperando:", self.packageWaitingForAck[0], "Do:", self.packageWaitingForAck[1], "\n";
 
             self.happeningTimeout = threading.Timer(self.timeout / 1000, self.sendPendingPackage)
             self.happeningTimeout.start()
             self.sendPendingPackage(False)
-            self.ackMessage(self.packagesQueue[0][0], self.packagesQueue[0][1])
 
     def sendPendingPackage(self, retransmition = True):
         if(retransmition):
@@ -137,7 +143,6 @@ class UdpServer(ServerMessages):
            print "Retransmiting package"
         print "sendPendingPackage", self.packageWaitingForAck;
         if(not (self.packageWaitingForAck[0] == None)):
-            #self.s.sendto(json.dumps(message), player.connection)
             self.s.sendto(json.dumps(self.packageWaitingForAck[0]), self.packageWaitingForAck[1])
 
     def ackMessage(self, connection, message):

@@ -9,6 +9,7 @@ class Player:
     self.connection = None
     self.score = 0
     self.waitingForAck = True
+    self.state = True
     self.lastPackageSent = None
 
   def getPieceByIdx(self, idx):

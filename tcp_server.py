@@ -18,8 +18,10 @@ class TcpServer(ServerMessages):
 
         while 1:
             if(self.game.readyToStart()):
+                colorsPrintMethod = getattr(Colors, self.game.currentTurn.identifier.lower())
+
                 self.sendMessageToCurrentPlayer({'type': 'message', 'message': "It's your turn"})
-                self.broadcastMessage({'type': 'message', 'message': "------- {} PLAYER TURN -----".format(self.game.currentTurn.identifier.upper())})
+                self.broadcastMessage({'type': 'message', 'message': colorsPrintMethod("------- {} PLAYER TURN -----".format(self.game.currentTurn.identifier.upper()))})
                 self.askCurrentPlayerToPlay()
                 self.receiveData()
             else:

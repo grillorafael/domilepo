@@ -23,7 +23,6 @@ class UdpServer(ServerMessages):
 
 
         while 1:
-            self.game.printPlayerTable()
             if(self.game.readyToStart()):
                 colorsPrintMethod = getattr(Colors, self.game.currentTurn.identifier.lower())
 

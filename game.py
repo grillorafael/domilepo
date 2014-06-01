@@ -65,9 +65,9 @@ class DomiLepo:
   def __init__(self):
     self.players = [
       Player('Blue'),
-      Player('Yellow')
-      # Player('Red'),
-      # Player('Green')
+      Player('Yellow'),
+      Player('Red'),
+      Player('Green')
     ]
 
     self.teams = 2
@@ -78,24 +78,6 @@ class DomiLepo:
     self.newGame()
 
   def setPieces(self):
-      #testFunction
-      self.pieces = [
-        [6, 6],
-        [6, 5],
-        [6, 4],
-        [6, 3],
-
-        [5, 5],
-        [5, 4],
-        [5, 3],
-
-        [4, 4],
-        [4, 3],
-
-        [3, 3],
-      ]
-
-  def setPieces2(self):
     self.pieces = [
       [6, 6],
       [6, 5],
@@ -143,7 +125,7 @@ class DomiLepo:
     self.currentTurn.discardPiece(piece)
     colorsPrintMethod = getattr(Colors, self.currentTurn.identifier.lower())
     self.usedPieces.append([piece, colorsPrintMethod(self.currentTurn.identifier)])
-    print "[{a},{s}]".format(a=piece[0], s = piece[1])
+    # print "[{a},{s}]".format(a=piece[0], s = piece[1])
     if len(self.currentTurn.pieces) == 0:
       self.gameOver = True
       if(piece[0] == piece[1]):
@@ -223,7 +205,7 @@ class DomiLepo:
     self.heads = [biggestPiece[0],biggestPiece[1]]
     self.currentTurn = player
     self.usedPieces.append([biggestPiece, player.identifier])
-    print "[{a},{s}]".format(a=biggestPiece[0], s = biggestPiece[1])
+    # print "[{a},{s}]".format(a=biggestPiece[0], s = biggestPiece[1])
     self.setNextTurn()
 
   def setNextTurn(self):

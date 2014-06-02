@@ -22,6 +22,9 @@ class ServerMessages(object):
                 elif(data['selected'] == '4'):
                     self.showToCurrentPlayerPlayersPieceCount()
                     self.askCurrentPlayerToPlay()
+                else:
+                    self.sendMessageToCurrentPlayer({'type': 'message', 'message': "Invalid Option!\n"})
+                    return True
             elif(data['type'] == 'position'):
                 if(data['selected'] == '0' or data['selected'] == '1'):
                     self.game.playPiece(self.lastPiece, int(data['selected']))

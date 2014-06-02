@@ -19,9 +19,18 @@ def askForTransportMethod():
     print "Please enter a valid option..."
     return askForTransportMethod()
 
+def askForPlayersSize():
+    print Colors.blue('How many players?:') + "\n"
+    print Colors.green('(1) 2 Players) + \n')
+    print Colors.green('(2) 4 Players) + \n')
+    selected = int(raw_input(""))
+    if selected == 1 or selected == 2:
+        return selected*2
+    return askForPlayersSize()
+
 def initGame(Server):
   print Colors.blue("Welcome to DomiLepo!")
-  game = DomiLepo()
+  game = DomiLepo(askForPlayersSize())
   server = Server(game)
 
 initGame(askForTransportMethod())

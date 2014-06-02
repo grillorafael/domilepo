@@ -62,14 +62,19 @@ class Player:
 
 
 class DomiLepo:
-  def __init__(self):
+  def __init__(self, size):
+    print size
     self.players = [
-      Player('Blue'),
-      Player('Yellow'),
-      Player('Red'),
-      Player('Green')
+     Player('Blue'),
+     Player('Red'),
     ]
-
+    if(size == 4):
+      self.players = [
+       Player('Blue'),
+       Player('Yellow'),
+       Player('Red'),
+       Player('Green')
+      ]
     self.teams = 2
     self.maxScore = 7
 

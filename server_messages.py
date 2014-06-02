@@ -55,7 +55,6 @@ class ServerMessages(object):
                     else:
                         self.sendMessageToCurrentPlayer({'type': 'message', 'message': "Can't draw any more pieces.\n"})
                     return True
-                #Erro de input aqui!!!! fc int nao funciona com string. Comofas?
                 if(not pieceIdx.isdigit()):
                     self.sendMessageToCurrentPlayer({'type': 'message', 'message': "Please input a valid option.\n"})
                     return True

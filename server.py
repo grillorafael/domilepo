@@ -21,11 +21,15 @@ def askForTransportMethod():
 
 def askForPlayersSize():
     print Colors.blue('How many players?:') + "\n"
-    print Colors.green('(1) 2 Players) + \n')
-    print Colors.green('(2) 4 Players) + \n')
-    selected = int(raw_input(""))
-    if selected == 1 or selected == 2:
-        return selected*2
+    print Colors.green('(1) 2 Players \n')
+    print Colors.green('(2) 4 Players \n')
+    selected = raw_input("")
+    if(selected.isdigit()):
+        selected = int(selected)
+        if selected == 1 or selected == 2:
+            return selected * 2
+
+    print Colors.red('Wrong option\n')
     return askForPlayersSize()
 
 def initGame(Server):

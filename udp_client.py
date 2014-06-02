@@ -16,8 +16,10 @@ class UdpClient:
         self.state = True # False // True instead of 0//1
         self.happeningTimeout = None
 
-        port = 12000
-        HOST, PORT = "127.0.0.1", int(port)
+        #port = 12000
+        HOST = raw_input("Digite o IP destino (ex: 127.0.0.1)\n")
+        PORT = int(raw_input("Digite a Porta (ex: 12000):\n"))
+        #HOST, PORT = "127.0.0.1", int(port)
         self.sv = (HOST, PORT)
         self.sock = socket(AF_INET, SOCK_DGRAM)
         self.sendMessage({'type': 'join'})

@@ -7,8 +7,9 @@ class TcpClient:
   def __init__(self):
     self.messageTmp = ""
     self.stackMessage = []
-
-    HOST, PORT = "127.0.0.1", 3000
+    HOST = raw_input("Digite o IP destino (ex: 127.0.0.1)\n")
+    PORT = int(raw_input("Digite a Porta (ex: 3000):\n"))
+    #HOST, PORT = "127.0.0.1", 3000
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:

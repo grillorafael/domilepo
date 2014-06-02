@@ -1,4 +1,5 @@
 from socket import *
+from terminal_colors import *
 import time, threading, json, thread, json, random
 
 class UdpClient:
@@ -16,13 +17,23 @@ class UdpClient:
         self.state = True # False // True instead of 0//1
         self.happeningTimeout = None
 
-        #port = 12000
-        HOST = raw_input("Digite o IP destino (ex: 127.0.0.1)\n")
-        PORT = int(raw_input("Digite a Porta (ex: 12000):\n"))
-        #HOST, PORT = "127.0.0.1", int(port)
-        self.sv = (HOST, PORT)
-        self.sock = socket(AF_INET, SOCK_DGRAM)
-        self.sendMessage({'type': 'join'})
+        HOST = raw_input(Colors.green("Digite o IP destino (ex: 127.0.0.1)\n"))
+        PORT = raw_input(Colors.green("Digite a Porta (ex: 12000):\n"))
+
+        if(PORT.isdigit()):
+            PORT = int(PORT)
+        else:
+            print Colors.red("Something went wrong. Maybe the address isn't correct")
+            return
+
+        try:
+            self.sv = (HOST, PORT)
+            self.sock = socket(AF_INET, SOCK_DGRAM)
+            self.sendMessage({'type': 'join'})
+        except:
+            print Colors.red("Something went wrong. Maybe the address isn't correct")
+            return
+
         try:
             while 1:
                 msg = self.sock.recv(1024)

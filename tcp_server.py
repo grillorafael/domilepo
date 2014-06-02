@@ -30,8 +30,11 @@ class TcpServer(ServerMessages):
 
                 player = self.game.getPlayerbySocket(connection)
 
-                self.sendMessageToPlayer(player, {'type': 'message', 'message': "You are the {} player".format(player.identifier.upper())})
-                self.broadcastMessage({'type': 'message', 'message': "{} player connected".format(player.identifier.upper())})
+                colorsPrintMethod = getattr(Colors, player.identifier.lower())
+                playerId = colorsPrintMethod(player.identifier.upper())
+
+                self.sendMessageToPlayer(player, {'type': 'message', 'message': "You are the {} player".format(playerId)})
+                self.broadcastMessage({'type': 'message', 'message': "{} player connected".format(playerId)})
                 self.broadcastMessage({'type': 'message', 'message': "Waiting for {} players to connect...".format(len(self.game.pendingConnectionPlayers()))})
 
 

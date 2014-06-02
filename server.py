@@ -4,20 +4,26 @@ from terminal_colors import *
 from tcp_server import *
 from udp_server import *
 
-def askForTransportMethod():
+def askForTransportMethod(invalid = False):
   os.system('clear')
+  if(invalid):
+      print Colors.red("Please enter a valid option...\n")
   print Colors.blue('Select your transport method:') + "\n"
   print Colors.green('(1) TCP') + "\n"
   print Colors.green('(2) UDP') + "\n"
-  selected = int(raw_input(""))
-  print selected
+  selected = raw_input("")
+
+  if(not selected.isdigit()):
+      return askForTransportMethod(True)
+
+  selected = int(selected)
+
   if selected == 1:
     return TcpServer
   elif selected == 2:
     return UdpServer
   else:
-    print "Please enter a valid option..."
-    return askForTransportMethod()
+    return askForTransportMethod(True)
 
 def askForPlayersSize():
     print Colors.blue('How many players?:') + "\n"

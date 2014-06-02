@@ -5,6 +5,7 @@ import os
 from terminal_colors import *
 
 class TcpClient:
+  TITLE = 'TCP'
   def __init__(self):
     self.messageTmp = ""
     self.stackMessage = []
@@ -52,5 +53,3 @@ class TcpClient:
         fullMessage = self.messageTmp
         self.messageTmp = ""
         self.handleMessage(fullMessage, sock)
-
-TcpClient()

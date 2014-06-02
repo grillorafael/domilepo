@@ -3,7 +3,7 @@ from terminal_colors import *
 import time, threading, json, thread, json, random
 
 class UdpClient:
-
+    TITLE = 'UDP'
     def __init__(self):
         self.messageTmp = ""
         self.stackMessage = []
@@ -146,4 +146,3 @@ class UdpClient:
                 return True
             else:
                 return False
-UdpClient()

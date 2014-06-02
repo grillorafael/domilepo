@@ -27,8 +27,11 @@ class ServerMessages(object):
                     return True
             elif(data['type'] == 'position'):
                 if(data['selected'] == '0' or data['selected'] == '1'):
+                    colorsPrintMethod = getattr(Colors, self.game.currentTurn.identifier.lower())
+                    self.broadcastMessage({'type': 'message', 'message': colorsPrintMethod("{}".format(self.game.currentTurn.identifier.upper())) + " has played [{head},{tail}].\n".format(head=self.lastPiece[0], tail=self.lastPiece[1])})
+                    #self.broadcastMessage({'type': 'message', 'message': self.game.currentTurn.identifier.upper() + " has played [{head},{tail}].\n".format(head=self.lastPiece[0], tail=self.lastPiece[1])})
+
                     self.game.playPiece(self.lastPiece, int(data['selected']))
-                    self.broadcastMessage({'type': 'message', 'message': self.game.currentTurn.identifier.upper() + " has played [{head},{tail}].\n".format(head=self.lastPiece[0], tail=self.lastPiece[1])})
                     self.checkEndGame()
                     return True
                 else:
@@ -67,8 +70,10 @@ class ServerMessages(object):
                     possiblePiecePositions = list(self.game.canUsePiece(piece))
                     if len(possiblePiecePositions) > 0:
                         if len(possiblePiecePositions) == 1:
+                            colorsPrintMethod = getattr(Colors, self.game.currentTurn.identifier.lower())
+                            self.broadcastMessage({'type': 'message', 'message': colorsPrintMethod("{}".format(self.game.currentTurn.identifier.upper())) + " has played [{head},{tail}].\n".format(head=piece[0], tail=piece[1])})
+                            #self.broadcastMessage({'type': 'message', 'message': self.game.currentTurn.identifier.upper() + " has played [{head},{tail}].\n".format(head=piece[0], tail=piece[1])})
                             self.game.playPiece(piece, possiblePiecePositions[0])
-                            self.broadcastMessage({'type': 'message', 'message': self.game.currentTurn.identifier.upper() + " has played [{head},{tail}].\n".format(head=piece[0], tail=piece[1])})
                             self.checkEndGame()
                             return True
                         else:

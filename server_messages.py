@@ -36,7 +36,10 @@ class ServerMessages(object):
                     if(self.game.canDraw()):
                         self.sendMessageToCurrentPlayer({'type': 'message', 'message': "Can't skip yet!\n"})
                     else:
-                        self.game.setNextTurn()
+                        self.game.skipCount += 1
+                        if(not self.game.setNextTurn()):
+                            self.broadcastMessage({'type': 'message', 'message': "Draw! Checking points....\n"})
+                        self.checkEndGame()
                     return True
                 elif pieceIdx == 'd':
                     if(self.game.canDraw()):
@@ -46,6 +49,7 @@ class ServerMessages(object):
                     else:
                         self.sendMessageToCurrentPlayer({'type': 'message', 'message': "Can't draw any more pieces.\n"})
                     return True
+                #Erro de input aqui!!!! fc int nao funciona com string. Comofas?
                 piece = self.game.currentTurn.getPieceByIdx(int(pieceIdx))
                 self.lastPiece = piece
                 if piece == False:
@@ -119,10 +123,15 @@ class ServerMessages(object):
 
     def checkEndGame(self):
         if(self.game.gameOver == True):
-            self.broadcastMessage({'type': 'message', 'message': "Game Over!\n" + self.game.currentTurn.identifier + " has won the turn!\n"})
+            if(self.game.currentTurn == None):
+                self.broadcastMessage({'type': 'message', 'message': "Game Over!\nSame score! 0 points this round!\n"})
+            else:
+                self.broadcastMessage({'type': 'message', 'message': "Game Over!\n" + self.game.currentTurn.identifier + " has won the turn!\n"})
             score = self.game.getScore()
             for s in score:
-                if(s.score > self.game.maxScore):
+                if(s.score >= self.game.maxScore):
                     self.broadcastMessage({'type': 'message', 'message': "Game Over!\n" + "Team " + s.id + " has won the game!\n"})
-            self.broadcastMessage({'type': 'message', 'message': self.printScore(score)})
+            placar = self.printScore(score)
+            print placar
+            self.broadcastMessage({'type': 'message', 'message': placar})
             self.game.newGame()

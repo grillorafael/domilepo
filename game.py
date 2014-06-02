@@ -75,6 +75,8 @@ class DomiLepo:
 
     self.currentTurn = self.players[0]
     self.gameOver = True
+    self.skipCount = 0
+    self.lastPiecePoints = 0
     self.newGame()
 
   def setPieces(self):
@@ -122,22 +124,22 @@ class DomiLepo:
     return None
 
   def playPiece(self, piece, position):
+    self.skipCount = 0
     self.currentTurn.discardPiece(piece)
     colorsPrintMethod = getattr(Colors, self.currentTurn.identifier.lower())
     self.usedPieces.append([piece, colorsPrintMethod(self.currentTurn.identifier)])
     # print "[{a},{s}]".format(a=piece[0], s = piece[1])
-    if len(self.currentTurn.pieces) == 0:
-      self.gameOver = True
-      if(piece[0] == piece[1]):
-        if(self.heads[0] == self.heads[1]):
-          self.currentTurn.score+=4
-        else:
-          self.currentTurn.score+=2
-      elif((self.heads[0] == piece[0] and self.heads[1] == piece[1]) or (self.heads[1] == piece[0] and  self.heads[0] == piece[1])):
-        self.currentTurn.score+=3
+    if(piece[0] == piece[1]):
+      if(self.heads[0] == self.heads[1]):
+        self.lastPiecePoints=4
       else:
-        self.currentTurn.score+=1
-
+        self.lastPiecePoints=2
+    elif((self.heads[0] == piece[0] and self.heads[1] == piece[1]) or (self.heads[1] == piece[0] and  self.heads[0] == piece[1])):
+      self.lastPiecePoints=3
+    else:
+      self.lastPiecePoints=1
+    if len(self.currentTurn.pieces) == 0:
+        self.endGame()
     else:
       if self.heads[position] == piece[0]:
         self.heads[position] = piece[1]
@@ -145,6 +147,20 @@ class DomiLepo:
         self.heads[position] = piece[0]
       self.setNextTurn()
 
+  def endGame(self):
+    self.gameOver = True
+    if(self.skipCount == 3):
+      tempScore = [0,0]
+      for i in range(len(self.players)):
+        tempScore[i%2] += self.players[i].score
+      if(tempScore[0] > tempScore [1]):
+        self.currentTurn = self.players[1]
+      elif(tempScore[0] < tempScore [1]):
+        self.currentTurn = self.players[0]
+      else:
+        self.currentTurn = None
+        return
+    self.currentTurn.score += self.lastPiecePoints
 
   def canUsePiece(self, piece):
     positions = Set([])
@@ -209,14 +225,18 @@ class DomiLepo:
     self.setNextTurn()
 
   def setNextTurn(self):
+    if(self.skipCount == len(self.players)+1):
+      self.skipCount = 0
+      self.endGame()
+      return False
     for idx, p in enumerate(self.players):
       if p == self.currentTurn:
         if idx == len(self.players) - 1:
           self.currentTurn = self.players[0]
-          return
+          return True
         else:
           self.currentTurn = self.players[idx + 1]
-          return
+          return True
 
   def giveCards(self):
     currentPlayer = 0;

@@ -61,24 +61,15 @@ class UdpClient:
 
     def typeMessage(self, message):
         option = raw_input(message['question'])
-        if(option == ''):
-            self.typeMessage(message);
-        else:
-            self.sendMessage({'type': 'options', 'selected': option})
+        self.sendMessage({'type': 'options', 'selected': option})
 
     def optionsMessage(self, message):
         option = raw_input(message['question'])
-        if(option == ''):
-            self.optionsMessage(message);
-        else:
-            self.sendMessage({'type': 'piece', 'selected': option})
+        self.sendMessage({'type': 'piece', 'selected': option})
 
     def positionMessage(self, message):
         option = raw_input(message['question'])
-        if(option == ''):
-            self.positionMessage(message);
-        else:
-            self.sendMessage({'type': 'position', 'selected': option})
+        self.sendMessage({'type': 'position', 'selected': option})
 
     def ackMessage(self, message):
         #print "Receiving ack for ", message

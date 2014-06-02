@@ -7,6 +7,9 @@ class ServerMessages(object):
 
     def handleData(self, data):
         if data:
+            if(not data['selected']):
+                self.sendMessageToCurrentPlayer({'type': 'message', 'message': "Please input a valid option.\n"})
+                return True
             if(data['type'] == 'options'):
                 if(data['selected'] == '1'):
                     self.showCurrentPlayerPieces()
@@ -50,6 +53,9 @@ class ServerMessages(object):
                         self.sendMessageToCurrentPlayer({'type': 'message', 'message': "Can't draw any more pieces.\n"})
                     return True
                 #Erro de input aqui!!!! fc int nao funciona com string. Comofas?
+                if(not pieceIdx.isdigit()):
+                    self.sendMessageToCurrentPlayer({'type': 'message', 'message': "Please input a valid option.\n"})
+                    return True
                 piece = self.game.currentTurn.getPieceByIdx(int(pieceIdx))
                 self.lastPiece = piece
                 if piece == False:

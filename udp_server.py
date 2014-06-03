@@ -10,9 +10,9 @@ class UdpServer(ServerMessages):
         self.game = game
 
         self.s = socket(AF_INET, SOCK_DGRAM)
-        self.s.bind(('127.0.0.1', 12000))
+        self.s.bind(('', 12000))
 
-        print "Listening to 127.0.0.1:12000\n"
+        print "Listening to port 12000\n"
 
 
         self.packagesQueue = []

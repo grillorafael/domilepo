@@ -11,10 +11,10 @@ class TcpServer(ServerMessages):
         self.game = game
 
         self.s = socket(AF_INET, SOCK_STREAM)
-        self.s.bind(('127.0.0.1', 3000))
+        self.s.bind(('', 3000))
         self.s.listen(5)
 
-        print "Listening to 127.0.0.1:3000\n"
+        print "Listening to port 3000\n"
 
         while 1:
             if(self.game.readyToStart()):
